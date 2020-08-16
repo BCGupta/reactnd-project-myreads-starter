@@ -1,8 +1,8 @@
 import React, { Component }from 'react'
-// import * as BooksAPI from './BooksAPI'
+import * as BooksAPI from './BooksAPI'
 import './App.css'
 import { Route , Link } from 'react-router-dom';
-import getAll from "./data";
+
 
 class BooksApp extends React.Component {
 
@@ -12,8 +12,14 @@ class BooksApp extends React.Component {
         { key: 'read', name: 'Have Read'}
     ]
   state = {
-        books: getAll
+        books: []
   };
+
+    componentDidMount() {
+        BooksAPI.getAll().then(books => {
+            this.setState({books: books});
+        });
+    };
 
 
     moveBook = (book, shelf) => {
