@@ -1,4 +1,5 @@
 import React, { Component }from 'react'
+import { debounce } from 'throttle-debounce';
 import * as BooksAPI from './BooksAPI'
 import './App.css'
 import { Route , Link } from 'react-router-dom';
@@ -12,7 +13,8 @@ class BooksApp extends React.Component {
         { key: 'read', name: 'Have Read'}
     ]
   state = {
-        books: []
+        books: [],
+        searchBooks: [],
   };
 
     componentDidMount() {
@@ -23,7 +25,7 @@ class BooksApp extends React.Component {
 
 
     moveBook = (book, shelf) => {
-        
+
         BooksAPI.update(book, shelf).then(books => {
             console.log(books);
         });
@@ -40,14 +42,28 @@ class BooksApp extends React.Component {
         });
     };
 
+    searchForBooks = debounce(300, false, query => {
+        console.log(query);
+        if (query.length > 0) {
+            BooksAPI.search(query).then(books => {
+                console.log(books);
+                if (books.error) {
+                    this.setState({ searchBooks: [] });
+                } else {
+                    this.setState({ searchBooks: books });
+                }
+            });
+        } else {
+            this.setState({ searchBooks: [] });
+        }
+    });
 
   render() {
-      const { books } = this.state;
+      const { books, searchBooks } = this.state;
     return (
       <div className="app">
           <Route
-              exact
-              path="/"
+              exact path="/"
               render={() => (
                   <ListOfBooks
                       bookshelves={this.bookshelves}
@@ -56,12 +72,16 @@ class BooksApp extends React.Component {
                   />
               )}
           />
-          <Route path="/search"
+          <Route
+              path = "/search"
                  render={() => (
                      <SearchBooks
                          books = {books}
+                         onSearch={this.searchForBooks}
                          onMove = {this.moveBook}
-                     />)}
+                         onResetSearch={this.resetSearch}
+                     />
+                     )}
           />
       </div>
     );
@@ -86,11 +106,11 @@ class ListOfBooks extends Component {
 
 class SearchBooks extends Component {
   render() {
-      const {books, onMove } = this.props;
+      const {books, onSearch, onResetSearch } = this.props;
     return (
         <div className='search-books'>
-          <SearchBar/>
-          <SearchResults books={books} onMove={onMove} />
+          <SearchBar onSearch={onSearch} onResetSearch={onResetSearch}/>
+          <SearchResults books={books}/>
         </div>
     )
   }
@@ -147,13 +167,13 @@ const Book = props => {
                 style={{
                     width: 128,
                     height: 193,
-                    backgroundImage: 'url("http://books.google.com/books/content?id=PGR2Aw...")',
+                    backgroundImage: `url(${book.imageLinks && book.imageLinks.thumbnail})`,
           }}
           />
           <BookshelfChanger book={book} shelf={shelf} onMove={onMove}/>
           </div>
           <div className="book-title">{book.title}</div>
-          <div className="book-authors">{book.authors.join(', ')}</div>
+          <div className="book-authors">{book.authors && book.authors.join(', ')}</div>
           </div>
         </li>
     );
@@ -183,27 +203,43 @@ class BookshelfChanger extends Component {
 }
 
 const SearchBar = props => {
+    const {onSearch, onResetSearch } = props;
     return (
           <div className="search-books-bar">
-            <CloseSearchButton />
-             <SearchBooksInput />
+            <CloseSearchButton onResetSearch={onResetSearch} />
+             <SearchBooksInput onSearch={onSearch}/>
           </div>
     );
 };
 
-const CloseSearchButton = () => {
+const CloseSearchButton = props => {
+    const {onResetSearch} = props;
     return (
           <Link to="/">
-            <button className="close-search">Close</button>
+            <button className="close-search" onClick={onResetSearch}> Close </button>
           </Link>
     );
 };
 
 class SearchBooksInput extends Component {
+    state = {
+        value: '',
+    };
+    handleChange = event => {
+        const val = event.target.value;
+        this.setState({value: val }, () => {
+            this.props.onSearch(val);
+        });
+    };
     render() {
         return (
           <div className="search-books-input-wrapper">
-            <input type="text" placeholder="Search by title or author" />
+            <input type="text"
+                   value={this.state.value}
+                   placeholder="Search by title or author"
+                   onChange={this.handleChange}
+                   autoFocus
+            />
           </div>
           );
         }
