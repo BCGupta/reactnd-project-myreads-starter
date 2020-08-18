@@ -2,9 +2,9 @@ import React, { Component } from 'react'
 import { debounce } from 'throttle-debounce';
 import * as BooksAPI from './BooksAPI'
 import './App.css'
-import { Route , Link } from 'react-router-dom';
-import ListOfBooks from './ListOfBooks';
-import SearchBooks from './SearchBooks';
+import { Route } from 'react-router-dom';
+import BookList from './components/BookList';
+import SearchBooks from './components/SearchBooks';
 
 
 const bookshelves = [
@@ -13,8 +13,7 @@ const bookshelves = [
     { key: 'read', name: 'Have Read'}
 ];
 
-class BooksApp extends React.Component {
-
+class BooksApp extends Component {
 
   state = {
         myBooks: [],
@@ -50,7 +49,7 @@ class BooksApp extends React.Component {
         }
     };
 
-    searchForBooks = debounce(300, false, query => {
+    searchForBooks = debounce(250, false, query => {
         console.log(query);
         if (query.length > 0) {
             BooksAPI.search(query).then(books => {
@@ -69,14 +68,14 @@ class BooksApp extends React.Component {
   render() {
       const { myBooks, searchBooks,error } = this.state;
       if (error) {
-       return <div>An Error Occured. Please try later.</div>
+       return <div>An Error Occurred. Please try later.</div>
       }
     return (
       <div className="app">
           <Route
               exact path="/"
               render={() => (
-                  <ListOfBooks
+                  <BookList
                       bookshelves={bookshelves}
                       books={myBooks}
                       onMove={this.moveBook}

@@ -1,5 +1,5 @@
 import React from 'react';
-import BookshelfChanger from './BookshelfChanger';
+import ChangeShelf from './ChangeShelf';
 
 const Book = ({ book, shelf, onMove }) => (
     <li>
@@ -17,7 +17,7 @@ const Book = ({ book, shelf, onMove }) => (
                         })`
                     }}
                 />
-                <BookshelfChanger book={book} shelf={shelf} onMove={onMove} />
+                <ChangeShelf book={book} shelf={shelf} onMove={onMove} />
             </div>
             <div className="book-title">{book.title}</div>
             <div className="book-authors">

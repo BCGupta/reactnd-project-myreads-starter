@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 
-class SearchBooksInput extends Component {
+class SearchInput extends Component {
     state = {
         value: '',
     };
     handleChange = event => {
-        const val = event.target.value;
-        this.setState({value: val }, () => {
-            this.props.onSearch(val);
+        const v = event.target.value;
+        this.setState({value: v }, () => {
+            this.props.onSearch(v);
         });
     };
     render() {
@@ -24,4 +24,4 @@ class SearchBooksInput extends Component {
     }
 }
 
-export default SearchBooksInput;
+export default SearchInput;
